@@ -1,7 +1,7 @@
 import React from 'react';
 
 import Button from '../Button';
-import Toast from '../Toast';
+import ToastShelf from '../ToastShelf';
 
 import styles from './ToastPlayground.module.css';
 
@@ -9,12 +9,55 @@ const VARIANT_OPTIONS = ['notice', 'warning', 'success', 'error'];
 
 
 function ToastPlayground() {
-  const [variant, setVariant] = React.useState('notice');
+  const [variant, setVariant] = React.useState(VARIANT_OPTIONS[0]);
   const [message, setMessage] = React.useState('');
-  const [showToast, setShowToast] = React.useState(false);
+  const [toasts, setToasts] = React.useState([
+    {
+      id: crypto.randomUUID(),
+      message: 'An error has occurred.',
+      variant: 'error'
+    },
+    {
+      id: crypto.randomUUID(),
+      message: 'Logged in',
+      variant: 'success'
+    },
+    {
+      id: crypto.randomUUID(),
+      message: 'Warning, don\'t do that!',
+      variant: 'warning'
+    },
+    {
+      id: crypto.randomUUID(),
+      message: 'You have popped the toast.',
+      variant: 'notice'
+    }
+  ])
 
-  function dismissToast() {
-    setShowToast(false);
+  function createToast(event) {
+    event.preventDefault();
+
+    const nextToasts = [
+      ...toasts,
+      {
+        id: crypto.randomUUID(),
+        message,
+        variant
+      }
+    ];
+
+    setToasts(nextToasts);
+
+    setMessage('');
+    setVariant(VARIANT_OPTIONS[0]);
+  }
+
+  function dismissToast(id) {
+    const nextToasts = toasts.filter((toast) => {
+      return toast.id !== id;
+    });
+
+    setToasts(nextToasts);
   }
 
   return (
@@ -24,12 +67,9 @@ function ToastPlayground() {
         <h1>Toast Playground</h1>
       </header>
 
-      {showToast && (
-        <Toast variant={variant} dismissToast={dismissToast}>{message}</Toast>
-      )}
-      
-
-      <div className={styles.controlsWrapper}>
+      <ToastShelf toasts={toasts} dismissToast={dismissToast} />
+     
+      <form className={styles.controlsWrapper} onSubmit={createToast}>
         <div className={styles.row}>
           <label
             htmlFor="message"
@@ -81,12 +121,10 @@ function ToastPlayground() {
           <div
             className={`${styles.inputWrapper} ${styles.radioWrapper}`}
           >
-            <Button onClick={() => {
-              setShowToast(true);
-              }}>Pop Toast!</Button>
+            <Button>Pop Toast!</Button>
           </div>
         </div>
-      </div>
+      </form>
     </div>
   );
 }
